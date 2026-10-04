@@ -24,6 +24,11 @@
             --wrong-text: #9b2c2c;
             --back-btn: #a0aec0;
             --back-btn-hover: #2d3748;
+            --justification-bg: #ebf8ff;
+            --justification-border: #4299e1;
+            --justification-text: #2c5282;
+            --next-btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --next-btn-hover: #5a67d8;
         }
 
         /* Variáveis de Cores (Modo Escuro) */
@@ -43,6 +48,11 @@
             --wrong-text: #fed7d7;
             --back-btn: #718096;
             --back-btn-hover: #f7fafc;
+            --justification-bg: #2c5282;
+            --justification-border: #4299e1;
+            --justification-text: #ebf8ff;
+            --next-btn-bg: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --next-btn-hover: #63b3ed;
         }
 
         * {
@@ -252,6 +262,69 @@
             transform: none;
         }
 
+        /* Área de Justificativa */
+        .justification-container {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: var(--justification-bg);
+            border: 2px solid var(--justification-border);
+            border-radius: 12px;
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .justification-container.show {
+            display: block;
+        }
+
+        .justification-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--justification-text);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .justification-text {
+            font-size: 1rem;
+            color: var(--justification-text);
+            line-height: 1.6;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        /* Botão Próxima Questão */
+        .next-btn-container {
+            display: none;
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .next-btn-container.show {
+            display: block;
+        }
+
+        .next-btn {
+            background: var(--next-btn-bg);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
         .score-display {
             font-size: 4rem;
             color: #4facfe;
@@ -301,6 +374,15 @@
         <div id="options-container" class="options-grid">
             <!-- Botões gerados via JS -->
         </div>
+        <div id="justification-container" class="justification-container">
+            <div id="justification-title" class="justification-title"></div>
+            <div id="justification-text" class="justification-text"></div>
+        </div>
+        <div id="next-btn-container" class="next-btn-container">
+            <button id="next-btn" class="next-btn" onclick="nextQuestion()">
+                Próxima questão ➡
+            </button>
+        </div>
     </div>
 
     <!-- Tela de Resultados -->
@@ -344,7 +426,7 @@
         }
     };
 
-    // Banco de 30 questões reescritas e balanceadas.
+    // Banco de 30 questões reescritas e balanceadas com justificativas.
     const questions = [
         {
             question: "Qual a principal diferença entre os formatos genômicos FASTA e FASTQ?",
@@ -354,7 +436,8 @@
                 "FASTQ é a versão binária e altamente comprimida do formato FASTA, usada para economizar espaço de disco.",
                 "FASTA é de uso exclusivo para transcritos de RNA maduros e FASTQ exclusivo para DNA genômico bruto."
             ],
-            answer: 1
+            answer: 1,
+            justification: "O formato de coordenadas e textos FASTA contém unicamente o sequenciamento referencial biológico pareado com o seu cabeçalho, enquanto arquivos FASTQ ampliam a estrutura informacional ao adicionar também os scores de qualidade atrelados a estas leituras transcritas."
         },
         {
             question: "O que exatamente a quarta linha de um registro individual no formato FASTQ armazena?",
@@ -364,7 +447,8 @@
                 "Os valores de qualidade (Phred) codificados em caracteres ASCII correspondentes a cada base lida.",
                 "A coordenada cromossômica precisa indicando exatamente onde aquela read deverá ser alinhada."
             ],
-            answer: 2
+            answer: 2,
+            justification: "A quarta linha formacional contida internamente em um registro do arquivo FASTQ abriga de modo dedicado os scores de qualidade codificados na conversão em caracteres visuais ASCII (Q scores) designados pontualmente a cada base testada."
         },
         {
             question: "Por que sequenciadores geram resultados em FASTQ, carregando metadados além de apenas a sequência biológica?",
@@ -374,7 +458,8 @@
                 "Para empacotar o genoma de referência completo no mesmo arquivo, facilitando o alinhamento posterior.",
                 "Porque o antigo formato FASTA não suporta de forma nativa sequências maiores que 150 pares de bases."
             ],
-            answer: 1
+            answer: 1,
+            justification: "A estruturação dos dados biológicos em um banco FASTQ inclui os referidos scores de qualidade operacionais puramente com a finalidade de denotar probabilidade quantitativa correspondente à ocorrência de erro mecânico atrelado pontualmente a cada base sequenciada."
         },
         {
             question: "Dentre os grupos de arquivos abaixo, quais são classificados estritamente como formatos de COORDENADAS (anotações/variantes)?",
@@ -384,7 +469,8 @@
                 "Arquivos estruturados como BED, GFF3 e arquivos VCF.",
                 "Arquivos brutos da máquina como FASTQ aliados a um VCF."
             ],
-            answer: 2
+            answer: 2,
+            justification: "Ao separar topologicamente os conjuntos de dados lidos, a categoria orientada focada apenas em guardar as informações de coordenadas espaciais das amostras biológicas acomoda especificamente os formatos BED, GFF3, SAM/BAM e as chamadas de arquivos estruturados do VCF."
         },
         {
             question: "Um arquivo BED é muito utilizado na genômica. Quais são as suas três colunas absolutamente obrigatórias?",
@@ -394,7 +480,8 @@
                 "Nome do cromossomo, Posição exata do elemento e ID da variante encontrada.",
                 "Nome do cromossomo, Posição genômica inicial e Posição genômica final."
             ],
-            answer: 3
+            answer: 3,
+            justification: "Um arquivo em modelo BED (Browser Extensible Data) constrói sua utilidade posicional dependendo inflexivelmente de três colunas cruciais obrigatórias: a descrição referente ao nome de origem do cromossomo (chrom), à posição inicial exata desta área referencial abordada (chromStart) e à correspondente posição de término espacial (chromEnd)."
         },
         {
             question: "Qual a principal característica técnica que diferencia um arquivo BAM de um arquivo SAM?",
@@ -404,7 +491,8 @@
                 "O BAM é essencialmente a versão binária e compactada do formato SAM em texto plano legível.",
                 "O SAM já vem estruturalmente indexado por padrão, funcionalidade ausente no formato BAM."
             ],
-            answer: 2
+            answer: 2,
+            justification: "Diferente do arquivamento em texto plano amplamente legível presente estruturalmente no arquivo SAM original, o formato BAM entrega um modelo equivalente, porém convertido na essência de uma versão operada em forma primariamente binária gerada visando compactação eficiente."
         },
         {
             question: "Em um arquivo SAM/BAM, o mesmo identificador (QNAME) pode se repetir. Qual cenário NÃO justifica essa repetição?",
@@ -414,7 +502,8 @@
                 "A read formou um alinhamento quimérico (suplementar), mapeando porções em locais distintos.",
                 "A read obteve um score de qualidade Phred global excessivamente baixo durante o sequenciamento."
             ],
-            answer: 3
+            answer: 3,
+            justification: "Repetições legítimas originadas com a mesma nomenclatura de identificador (QNAME) estão justificadas tecnicamente no corpo do SAM/BAM perante a formatação de dados advindos de corridas em alinhamento paired-end, quando se processa uma leitura quimérica dividida entre dois eixos genômicos separados (split-read), e mediante leituras múltiplas simultâneas dotadas de qualidades operacionais correspondentes (multi-mapping). Falhas absolutas no score numérico capturado de Phred não regem nem impactam essa mesma reprodução informacional de nomes no código."
         },
         {
             question: "O que deve ser analisado no formato SAM/BAM para distinguir logicamente os múltiplos registros que compartilham o mesmo QNAME?",
@@ -424,7 +513,8 @@
                 "A extensão das operações descritas pela string alfanumérica CIGAR.",
                 "Os caracteres ASCII armazenados obrigatoriamente no campo QUAL."
             ],
-            answer: 1
+            answer: 1,
+            justification: "Quando blocos operacionais compartilhando um mesmo QNAME precisam ser isolados e destrinchados perante o alinhamento em SAM/BAM, os pesquisadores empregam o valor interpretado na base decimal e hexadecimal operada na coluna FLAG."
         },
         {
             question: "Considere a string CIGAR: 15M1I34M. Analisando as operações biológicas indicadas, quantas bases físicas compõem essa read no total?",
@@ -434,7 +524,8 @@
                 "Aproximadamente 34 bases químicas sequenciadas.",
                 "Aproximadamente 15 bases químicas sequenciadas."
             ],
-            answer: 1
+            answer: 1,
+            justification: "A descrição estipulada via CIGAR 15M1I34M pontua empiricamente que existem duas zonas mapeadas diretamente (M) compostas por 15 e 34 bases isoladas, e uma inserção biológica presente centralizada (I) com o tamanho físico composto de 1 base extra. Ao totalizar as variáveis constituintes originais correspondentes que formam de fato a read, chega-se ao valor estatístico de 15 + 1 + 34 = 50 bases pertencentes à query."
         },
         {
             question: "No CIGAR 15M1I34M, sabendo o tamanho total da read, quantas posições geográficas do genoma de referência ela abrange efetivamente?",
@@ -444,7 +535,8 @@
                 "A read cobre uma extensão de 34 posições na referência.",
                 "A read cobre uma extensão de 15 posições na referência."
             ],
-            answer: 1
+            answer: 1,
+            justification: "Levando em conta que o fator operacional apontado para inserções transversais (I) caracteriza pontualmente bases extras existentes unicamente na amostra avaliada sem equivalente sequenciado genômico subjacente, apenas as correlações mapeadas exatas descritas nas instâncias operacionais em matches (M) englobarão fatias efetivas ocupadas na estrutura fixa do referencial, cobrindo posições que calculam-se como 15 + 34 = 49."
         },
         {
             question: "Analisando o CIGAR alternativo 5S45M: indique a quantidade total de bases na read e a quantidade de posições que ela cobre na referência, respectivamente.",
@@ -454,7 +546,8 @@
                 "O total é 50 bases na read física; e ela ocupa 50 posições na referência genômica.",
                 "O total é 45 bases na read física; e ela ocupa 45 posições na referência genômica."
             ],
-            answer: 0
+            answer: 0,
+            justification: "O delineamento sequenciado formatado como 5S45M designa que na fita analisada ocorrem 5 recortes flexíveis (soft-clipped bases contidas internamente no arquivo sem ligação direta a genomas externos) e 45 matches convencionais efetivos sequenciados. A soma física exata para essas extremidades constituintes mantidas pela read forma a quantificação global em 5 + 45 = 50 unidades empíricas, mas ocupa especificamente e exclusivamente 45 blocos nas matrizes abrangidas no mapeamento referencial genômico do fundo testado."
         },
         {
             question: "Como se traduz corretamente a nomenclatura das versões do genoma humano (genome release) entre o repositório do UCSC e o GRC/NCBI?",
@@ -464,7 +557,8 @@
                 "Ambos os grandes repositórios padronizaram o uso exclusivo do termo hgX.",
                 "O banco de dados do UCSC não armazena ou classifica genomas humanos."
             ],
-            answer: 1
+            answer: 1,
+            justification: "Durante as categorizações focadas na versão sequencial operante do genoma estrutural humano originário entre as diferentes instituições e os repositórios correspondentes genéticos, o conjunto nomenclatural consolidado como hg19 hospedado pelo UCSC traduz as amostras de forma padronizada equivalentes ao GRCh37 e repete essas métricas direcionando o hg38 puramente atrelado à versão GRCh38."
         },
         {
             question: "Por que o exato mesmo release genômico (ex: hg38) pode apresentar genes diferentes se o download for feito via NCBI em vez do Ensembl?",
@@ -474,7 +568,8 @@
                 "Porque embora a sequência de nucleotídeos seja idêntica, os pipelines e regras de anotação funcional diferem.",
                 "Porque plataformas divergentes utilizam tecnologias de interpretação de sequenciamento incompatíveis."
             ],
-            answer: 2
+            answer: 2,
+            justification: "Quando bases biológicas paralelas estruturais, como os conjuntos do Ensembl comparados perante os do banco NCBI, compartilham formalmente as instâncias relativas ao mesmo conjunto e à sequência basal, a variabilidade pontual decorrente reside primariamente das regras estritas independentes estruturais exclusivas formuladas operadas durante os múltiplos pipelines originais focados em anotação mantidos entre ambas."
         },
         {
             question: "Qual programa alinhador disponível na bioinformática moderna é o mais adequado para mapear reads curtas de RNA eucariótico (splice-aware)?",
@@ -484,7 +579,8 @@
                 "Ferramentas capazes de lidar de forma nativa com íntrons, como o STAR ou HISAT2.",
                 "Ferramentas de pseudoalinhamento exclusivo sem geração de BAM, como Kallisto."
             ],
-            answer: 2
+            answer: 2,
+            justification: "Nos procedimentos transcritômicos regendo short reads associadas intrinsecamente ao contexto do mRNA maturado com a quebra nativa isolada correspondente, exige-se compulsoriamente alinhadores flexíveis avançados estruturados como o STAR ou HISAT2 que compensem os alvos (splice-aware) perante aos blocos residuais de processamento."
         },
         {
             question: "Para alinhar grandes volumes de reads curtas de DNA genômico padrão (sequenciamento Illumina), as melhores escolhas clássicas citadas em aula são:",
@@ -494,7 +590,8 @@
                 "O alinhador Minimap2, configurado com perfis específicos de alinhamento.",
                 "O algoritmo pseudoalinhador probabilístico embutido na ferramenta Salmon."
             ],
-            answer: 1
+            answer: 1,
+            justification: "Quando o processamento volta-se pontualmente perante um cenário categorizado laboratorialmente via Genomic Short, são exigidas rotinas biológicas dependendo preferencialmente de tecnologias alinhadoras ancoradas em Burrows-Wheeler, citando comumente o BWA ou estruturas correlatas baseadas diretamente focadas no genoma perante o programa Bowtie2."
         },
         {
             question: "Que ferramenta computacional se consolidou como o padrão absoluto para alinhar reads ultralongas geradas por tecnologias como PacBio ou Nanopore?",
@@ -504,7 +601,8 @@
                 "O software HISAT2 através de seus módulos de expansão genômica nativos.",
                 "O algoritmo Minimap2, projetado visando contornar as altas taxas de erro associadas."
             ],
-            answer: 3
+            answer: 3,
+            justification: "Tratando instâncias extraídas atreladas pontualmente a percursos abrangentes Genomic Long presentes nos fluxogramas estruturais de extração pesada (PacBio e Nanopore), a operação requer a calibração focada unicamente na adoção metodológica correspondente direcionada à utilidade analítica do minimap2."
         },
         {
             question: "Uma vantagem técnica que o alinhador Bowtie2 possui em relação ao BWA mem frequentemente abordada em contextos acadêmicos é:",
@@ -514,7 +612,8 @@
                 "O Bowtie2 permite alinhamento local flexível (soft-clipping) e o BWA mem rejeita essa estratégia.",
                 "O Bowtie2 suporta forçar um mapeamento puramente end-to-end, economizando poder computacional."
             ],
-            answer: 3
+            answer: 3,
+            justification: "A seleção das ferramentas de alinhamento biológico depende fundamentalmente da variabilidade dos dados e das particularidades dos objetivos testados, sendo o bowtie2 apontado no contexto genômico curto como mais útil nas frentes que busquem identificar alinhamentos secundários divergentes ou decodificações restritas nas regiões isoladas formadas por material extensamente repetitivo."
         },
         {
             question: "Qual é a estrutura correta (pipeline) de comandos com BWA e Samtools para partir de um FASTQ single-end até chegar em um BAM compatível com IGV?",
@@ -524,7 +623,8 @@
                 "Comando samtools view para leitura, seguido de bwa mem, e finalizando com samtools index.",
                 "Comando bwa mem no arquivo, seguido de samtools index, e por último o samtools sort."
             ],
-            answer: 1
+            answer: 1,
+            justification: "No percurso convencional de decodificação processando SAMs baseados inicialmente nas referências primárias contidas indexadas (BWA index) emparelhadas nativamente após processarem o pipeline de correlação estrutural estático (bwa mem) com short reads, segue-se o emprego logístico focado nas etapas estruturais formativas geradas via manipulação do pacote associativo referencial samtools sort para conversão paralela ao BAM referenciado perante uma segunda indexação de amarração encadeada via samtools index."
         },
         {
             question: "Por que não podemos reaproveitar o índice de um genoma de referência feito no BWA para realizar um alinhamento posterior utilizando o programa Bowtie2?",
@@ -534,7 +634,8 @@
                 "Porque o volume de linhas presente no FASTQ original se desestabiliza quando troca-se a ferramenta.",
                 "Na verdade, o índice é universal; um único arquivo indexado serve para qualquer ferramenta moderna."
             ],
-            answer: 1
+            answer: 1,
+            justification: "O percurso processando a montagem primária atrelada aos índices preparatórios consolidados na referência resulta invariavelmente operando uma arquitetura dependente referida categoricamente como Aligner Specific INDEX, determinando que sua criptografia analítica construída se restrinja especificamente estruturada aos requisitos isolados fundamentais exigidos restritamente na plataforma compiladora submetida."
         },
         {
             question: "O que o software visualizador IGV (Integrative Genomics Viewer) demanda obrigatoriamente de um arquivo BAM para não travar a memória do computador?",
@@ -544,7 +645,8 @@
                 "O arquivo BAM precisa ser retroativamente descompactado de volta para o formato gigante em texto legível chamado SAM.",
                 "O arquivo BAM deve conter uma pré-filtragem que delete todas as leituras sem relevância clínica diagnosticada."
             ],
-            answer: 0
+            answer: 0,
+            justification: "Aplicativos interativos destinados focados nas vias operacionais na exploração genômica tridimensional isolada contida no visualizador IGV solicitam integralmente no workflow informacional que a codificação convertida transite via manipulação ordenada SAM originando BAMs acompanhados paralelamente dos devidos bancos referenciais indexados gerados na pipeline antes de alocar seu desdobramento nas sessões interpretativas gráficas."
         },
         {
             question: "Qual o papel principal do arquivo VCF de 'variantes populacionais conhecidas' inserido durante a etapa de chamada de variantes genômicas?",
@@ -554,7 +656,8 @@
                 "Ele atua na recalibração matemática da qualidade e ensina o algoritmo a não confundir variações comuns com erros mecânicos da máquina.",
                 "Ele substitui completamente o peso biológico do arquivo FASTQ na etapa anterior e acelera severamente o processo de alinhamento."
             ],
-            answer: 2
+            answer: 2,
+            justification: "Perante o mapeamento laboratorial contido nas variações procedurais pontuais operadas pelo algoritmo referenciado via ferramentas especializadas de análise clínica, focar nos repositórios independentes referidos externamente sob os dicionários Already Known Variants atua calçando especificamente as comparações e ponderando numericamente variações populacionais frente a anomalias resultantes e induzidas nos achados experimentais extraídos."
         },
         {
             question: "Como estão mapeadas as informações bidimensionais em uma típica matriz de contagens brutas (raw counts) oriunda de um ensaio biológico de RNA-Seq?",
@@ -564,7 +667,8 @@
                 "As linhas do arquivo organizam os Reads individuais enquanto as colunas descrevem seus respectivos Valores absolutos de Qualidade.",
                 "As linhas do arquivo organizam todos os Cromossomos mapeados e as colunas registram as diversas Coordenadas sequenciais."
             ],
-            answer: 1
+            answer: 1,
+            justification: "Na compilação matricial estatística operante baseada nos quantificadores (Counting Method) originando a central referencial cruzada (Gene Expression Matrix), os atributos populacionais atrelados estritamente na representação visual isolam e alinham os genes focados mapeando nativamente as linhas verticais correspondentes enquanto detalham os processamentos experimentais provenientes das variadas amostras organizando essas medições sequencialmente e lateralmente estruturadas baseando nas colunas lógicas."
         },
         {
             question: "Ferramentas estatísticas modernas, como Kallisto e Salmon, destacam-se na quantificação transcricional por que vantagem metodológica central?",
@@ -574,7 +678,8 @@
                 "Por utilizarem simuladores algorítmicos avançados que convertem quimicamente os dados de RNA bruto em DNA estabilizado in silico.",
                 "Por compilarem uma sólida matriz de expressão diferencial sem a necessidade de confrontar nenhum tipo de sequência guia de referência."
             ],
-            answer: 1
+            answer: 1,
+            justification: "Alinhadores categorizados modernamente englobados na vertente operacional do ecossistema transcritômico curto paralelo (kallisto, salmon) descartam conversões biológicas intermediárias gerando economia analítica e processam correlações dinâmicas utilizando pseudoalinhamento direcionados categoricamente aos arquivos FASTAs nativos gerados via referências de agrupamentos dos Transcritos puros baseados nas suas medições."
         },
         {
             question: "Se uma biblioteca biológica tem 30 milhões de reads em sua totalidade, e o gene de interesse 'G1' mapeou exatamente 600 reads. Qual é o valor do CPM deste gene?",
@@ -584,7 +689,8 @@
                 "A normalização por profundidade resulta no valor de 600 unidades biológicas relativas.",
                 "A normalização por profundidade resulta no valor de 18.000 unidades biológicas relativas."
             ],
-            answer: 1
+            answer: 1,
+            justification: "O saldo referencial correspondente estipulado e gerado baseando nos números extraídos oriundos no processo do cálculo metodológico referencial (CPM), não emprega medições da espessura do gene e ajusta puramente dividindo as instâncias da amostragem totalizando os milhões de reads analisados referidos na base paralela estipulada via amostragem, totalizando empiricamente a correlação 600 / 30 = 20."
         },
         {
             question: "Retomando a questão anterior: Sabendo que o CPM de G1 resultou em 20 unidades, e que a extensão física desse gene é de 3 kb. Como finalizamos o cálculo do RPKM?",
@@ -594,7 +700,8 @@
                 "O valor final da normalização combinada atinge exatamente 6.66 pontos estatísticos RPKM.",
                 "O valor final da normalização combinada atinge exatamente 13 pontos estatísticos RPKM."
             ],
-            answer: 2
+            answer: 2,
+            justification: "A fórmula associada referencial atrelada integralmente ao RPKM converte o dado basal CPM controlando numericamente distorções originadas estritamente na influência imposta via a base quilométrica isolada contida do tamanho (kilobase) referente restritamente originada da estrutura extraída dos genes pontuais emparelhados. Subdividindo as unidades originais extraídas de CPM pelo escopo estrutural referencial do gene, atinge-se o cálculo linear focado resultando originando as quantificações estatísticas em 20 / 3 ≈ 6.66."
         },
         {
             question: "Em investigações comparativas entre condições biológicas distintas, por que métricas baseadas em TPM são consideradas matematicamente mais consistentes do que as de RPKM?",
@@ -604,7 +711,8 @@
                 "Porque a normalização via TPM é restritamente voltada a tecnologias de ponta compostas por leituras paired-end bilaterais.",
                 "Porque o método original RPKM é incapaz de mitigar as variações profundas resultantes do peso técnico de bibliotecas pequenas."
             ],
-            answer: 1
+            answer: 1,
+            justification: "O cálculo algorítmico do TPM prioriza primeiramente neutralizar a extensão referencial extraída da variação pertencente atrelada focada nativamente nos tamanhos mensageiros paralelos perante os ajustes aplicados ao sequenciamento submetido, o que flexibiliza estruturalmente uma comparabilidade estatística viável gerando resultados contínuos padronizados entre amostragens biológicas díspares simultâneas."
         },
         {
             question: "Qual o principal motivo técnico que força pacotes estatísticos avançados (DESeq2, edgeR) a rejeitarem variáveis tratadas como TPM e RPKM durante a expressão diferencial?",
@@ -614,7 +722,8 @@
                 "As diretrizes padronizadas da comunidade determinam que tabelas em TPM continuam compatíveis caso apliquem fatoramentos externos logarítmicos complexos.",
                 "O tratamento através de matrizes balanceadas em TPM perde funcionalidade severa perante as discrepâncias evolutivas frequentes em genomas humanos não caracterizados."
             ],
-            answer: 1
+            answer: 1,
+            justification: "A aplicação paralela algorítmica oriunda nos pacotes estatísticos avançados integrados (edgeR, DESeq2) projetados visando detecção fidedigna focada estruturalmente em disparidades provindas atreladas às variações diferenciais descartam métricas já compensadas operantes nativamente exigindo unicamente as coletas empíricas providas perante as contagens purificadas e não alteradas provenientes das matrizes com os raw counts extraídos originariamente nos relatórios isolados de genes paralelos referidos na análise principal formatada."
         },
         {
             question: "Ao delinearmos metodologias laboratoriais rígidas para genômica transcriptômica, como diferenciamos as finalidades teóricas entre uma réplica biológica de uma réplica técnica?",
@@ -624,7 +733,8 @@
                 "Replicações biológicas inexistem em experimentações computacionais modernas; validam-se teorias focando rigorosamente nas discrepâncias de performance técnica purificada.",
                 "Ensaios delineados sob protocolos de réplicas técnicas são monitorados integralmente em observações in vivo populacionais em contrapartida às biológicas exclusivas para cultura de tecidos celulares."
             ],
-            answer: 1
+            answer: 1,
+            justification: "Na viabilização focada em modelar e compor instâncias laboratoriais transcritômicas reprodutíveis operantes sob estatísticas emparelhadas, as replicações atreladas pontualmente à modalidade classificada referida via isolamento basal puramente técnico operam originárias puramente através da segmentação mecânica isolada atrelada pontualmente extraída do mesmo corpo individual submetido à bancada (n=1), divergindo frontalmente do uso oriundo através das medições biológicas contendo espécimes populacionais originárias exógenas paralelas diversificadas e autônomas agrupadas juntas."
         },
         {
             question: "Se a renderização multivariada de um gráfico PCA projetar as réplicas independentes do grupamento 'Controle' geometricamente mais dispersas do que a distância projetada contra o cluster 'Tratado', o que concluímos clinicamente?",
@@ -634,7 +744,8 @@
                 "Significa primariamente que o alinhador mapeou com sucesso expressivas conexões pareadas intrínsecas a corridas exclusivas de um pipeline focado no processamento Paired-End.",
                 "Evidencia indubitavelmente que os reguladores intrínsecos de genes basais do conglomerado Tratado colapsaram e registraram nulidade de taxa expressiva após sofrer as devidas induções simuladas."
             ],
-            answer: 1
+            answer: 1,
+            justification: "No decurso visual interativo extraído de medições quantitativas focadas em estatísticas baseadas na expressão (PCA) onde os nós geométricos referidos formam instâncias dispersas estocasticamente nas instâncias projetadas dos referidos vetores amostrais pertencentes à base, evidencia-se clinicamente um alerta que sinaliza forte interferência basal, incertezas intrínsecas e contaminações biológicas originando perturbações sistêmicas superando ruidosamente as evidências testadas originando falhas."
         },
         {
             question: "Sem diferenças reais significativas, 20.000 genes testados ao p<0,05 originam cerca de mil descobertas biológicas falsas. Como o método matemático idealizado por Benjamini-Hochberg (FDR) resgata o peso analítico desta pesquisa?",
@@ -644,7 +755,8 @@
                 "Ao ranquear as discrepâncias registradas entre os múltiplos testes avaliativos conduzidos paralelamente, o método flexibiliza limites rígidos estritos regulando uma cota percentual fixa tolerável destinada especificamente para falhas assumidas.",
                 "Forçando repetições analíticas cruzadas entre matrizes sintéticas processadas integralmente nos parâmetros restritivos da calibração populacional oriunda da máquina óptica pertencente à amostragem anterior estagnada."
             ],
-            answer: 2
+            answer: 2,
+            justification: "O balanço relacional estrutural extraído pela via metodológica associada paralela oriunda via referencial Benjamini-Hochberg neutraliza ponderando descobertas originando falhas contendo métricas puras relativas provindas nas taxas de False Discovery Rate (FDR) geradas nativamente calibrando os p-valores extraídos ordenadamente num ranking proporcional referencial ajustado frente às testagens amostrais contidas submetidas ao estudo laboratorial focado paralelamente minimizando distorções resultantes."
         }
     ];
 
@@ -677,6 +789,11 @@
     const finalScore = document.getElementById('final-score');
     const finalGrade = document.getElementById('final-grade');
     const feedbackMsg = document.getElementById('feedback-msg');
+    const justificationContainer = document.getElementById('justification-container');
+    const justificationTitle = document.getElementById('justification-title');
+    const justificationText = document.getElementById('justification-text');
+    const nextBtnContainer = document.getElementById('next-btn-container');
+    const nextBtn = document.getElementById('next-btn');
 
     function switchScreen(screenName) {
         Object.values(screens).forEach(screen => screen.classList.remove('active'));
@@ -710,6 +827,8 @@
         
         scoreCounter.textContent = `Acertos: ${score}`;
         optionsContainer.innerHTML = '';
+        justificationContainer.classList.remove('show');
+        nextBtnContainer.classList.remove('show');
         
         const originalCorrectText = q.options[q.answer];
         const shuffledOptions = shuffleArray([...q.options]);
@@ -728,23 +847,37 @@
         const buttons = optionsContainer.querySelectorAll('.option-btn');
         buttons.forEach(btn => btn.disabled = true);
 
-        if (selectedIndex === correctIndex) {
+        const isCorrect = selectedIndex === correctIndex;
+        
+        if (isCorrect) {
             buttonClicked.classList.add('correct');
             score++;
             scoreCounter.textContent = `Acertos: ${score}`;
+            justificationTitle.textContent = "✅ Correto!";
+            justificationTitle.style.color = "var(--correct-text)";
         } else {
             buttonClicked.classList.add('wrong');
             buttons[correctIndex].classList.add('correct');
+            justificationTitle.textContent = "❌ Incorreto";
+            justificationTitle.style.color = "var(--wrong-text)";
         }
 
-        setTimeout(() => {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < currentQuestions.length) {
-                loadQuestion();
-            } else {
-                showResults();
-            }
-        }, 1500); 
+        // Mostrar justificativa
+        const q = currentQuestions[currentQuestionIndex];
+        justificationText.textContent = q.justification;
+        justificationContainer.classList.add('show');
+        
+        // Mostrar botão "Próxima questão"
+        nextBtnContainer.classList.add('show');
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuestions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
     }
 
     function showResults() {
