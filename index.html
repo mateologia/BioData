@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioQuest: Desafio de Bioinformática</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        /* Variáveis de Cores (Modo Claro Padrão) */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --container-bg: #ffffff;
+            --text-title: #2d3748;
+            --text-body: #718096;
+            --text-option: #4a5568;
+            --option-bg: #f7fafc;
+            --option-border: #e2e8f0;
+            --option-hover-bg: #ebf8ff;
+            --progress-bg: #edf2f7;
+            --correct-bg: #c6f6d5;
+            --correct-text: #276749;
+            --wrong-bg: #fed7d7;
+            --wrong-text: #9b2c2c;
+            --back-btn: #a0aec0;
+            --back-btn-hover: #2d3748;
+        }
+
+        /* Variáveis de Cores (Modo Escuro) */
+        body.dark-mode {
+            --bg-gradient: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            --container-bg: #1a202c;
+            --text-title: #f7fafc;
+            --text-body: #a0aec0;
+            --text-option: #e2e8f0;
+            --option-bg: #2d3748;
+            --option-border: #4a5568;
+            --option-hover-bg: #2c5282;
+            --progress-bg: #4a5568;
+            --correct-bg: #22543d;
+            --correct-text: #c6f6d5;
+            --wrong-bg: #742a2a;
+            --wrong-text: #fed7d7;
+            --back-btn: #718096;
+            --back-btn-hover: #f7fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-title);
+            transition: background 0.3s ease;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            width: 100%;
+            max-width: 800px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Botão Tema */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: var(--text-title);
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+
+        p {
+            text-align: center;
+            color: var(--text-body);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .mode-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            max-width: 350px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn.mode-random {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .btn.mode-menu {
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--back-btn);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-btn:hover {
+            color: var(--back-btn-hover);
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: var(--progress-bg);
+            border-radius: 10px;
+            height: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: background-color 0.3s;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            color: var(--text-option);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-title);
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background-color: var(--option-bg);
+            border: 2px solid var(--option-border);
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-option);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .option-btn:hover {
+            background-color: var(--option-hover-bg);
+            border-color: #63b3ed;
+            transform: translateX(5px);
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct-bg);
+            border-color: #48bb78;
+            color: var(--correct-text);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-bg);
+            border-color: #f56565;
+            color: var(--wrong-text);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .score-display {
+            font-size: 4rem;
+            color: #4facfe;
+            font-weight: 800;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .grade-display {
+            font-size: 2rem;
+            color: #48bb78;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Botão Tema (Modo Escuro / Claro) -->
+    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Alternar Modo Escuro">🌙</button>
+
+    <!-- Tela Inicial -->
+    <div id="start-screen" class="screen active">
+        <h1>BioQuest</h1>
+        <p>Treinamento Intensivo: Genomas, Alinhamentos e RNA-Seq</p>
+        
+        <div class="mode-buttons">
+            <button class="btn" onclick="startGame('sequential')">Modo Sequencial<br><span style="font-size: 0.8rem; font-weight: 400;">Perguntas na ordem, opções embaralhadas</span></button>
+            <button class="btn mode-random" onclick="startGame('random')">Modo Aleatório<br><span style="font-size: 0.8rem; font-weight: 400;">Perguntas e opções embaralhadas</span></button>
+        </div>
+    </div>
+
+    <!-- Tela do Quiz -->
+    <div id="quiz-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('start')">⬅ Voltar ao Menu</button>
+        
+        <div class="stats">
+            <span id="question-counter">Questão 1 / 30</span>
+            <span id="score-counter">Acertos: 0</span>
+        </div>
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="question-text" class="question-text">Pergunta aqui?</div>
+        <div id="options-container" class="options-grid">
+            <!-- Botões gerados via JS -->
+        </div>
+    </div>
+
+    <!-- Tela de Resultados -->
+    <div id="result-screen" class="screen">
+        <h1>Fim de Jogo!</h1>
+        <p>Aqui está o seu resultado final:</p>
+        
+        <div id="final-score" class="score-display">0/30</div>
+        <div id="final-grade" class="grade-display">Nota: 0.0 / 10</div>
+        
+        <p id="feedback-msg"></p>
+        
+        <div class="mode-buttons">
+            <button class="btn" onclick="restartGame()">Jogar Novamente (Mesmo Modo)</button>
+            <button class="btn mode-menu" onclick="switchScreen('start')">⬅ Voltar ao Menu</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Gerenciamento de Tema Escuro / Claro
+    const themeBtn = document.getElementById('theme-toggle');
+    
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        
+        // Atualiza ícone
+        themeBtn.textContent = isDark ? '☀️' : '🌙';
+        
+        // Salva preferência no navegador
+        localStorage.setItem('bioquest-theme', isDark ? 'dark' : 'light');
+    }
+
+    // Ao carregar a página, checa a preferência salva
+    window.onload = () => {
+        const savedTheme = localStorage.getItem('bioquest-theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeBtn.textContent = '☀️';
+        }
+    };
+
+    // Banco de 30 questões reescritas e balanceadas.
+    const questions = [
+        {
+            question: "Qual a principal diferença entre os formatos genômicos FASTA e FASTQ?",
+            options: [
+                "FASTA guarda apenas coordenadas genômicas estruturais, enquanto FASTQ guarda os alinhamentos completos.",
+                "FASTA contém apenas a sequência biológica e cabeçalho; FASTQ adiciona scores de qualidade da leitura.",
+                "FASTQ é a versão binária e altamente comprimida do formato FASTA, usada para economizar espaço de disco.",
+                "FASTA é de uso exclusivo para transcritos de RNA maduros e FASTQ exclusivo para DNA genômico bruto."
+            ],
+            answer: 1
+        },
+        {
+            question: "O que exatamente a quarta linha de um registro individual no formato FASTQ armazena?",
+            options: [
+                "A sequência nucleotídica lida diretamente pelo aparelho, contendo as bases A, C, G, T e N.",
+                "O nome da read ou identificador único gerado pelo software da máquina de sequenciamento.",
+                "Os valores de qualidade (Phred) codificados em caracteres ASCII correspondentes a cada base lida.",
+                "A coordenada cromossômica precisa indicando exatamente onde aquela read deverá ser alinhada."
+            ],
+            answer: 2
+        },
+        {
+            question: "Por que sequenciadores geram resultados em FASTQ, carregando metadados além de apenas a sequência biológica?",
+            options: [
+                "Para categorizar automaticamente quais sequências pertencem ao grupo de RNA e quais pertencem ao de DNA.",
+                "Para informar a probabilidade matemática de erro na identificação de cada base biológica pelo equipamento.",
+                "Para empacotar o genoma de referência completo no mesmo arquivo, facilitando o alinhamento posterior.",
+                "Porque o antigo formato FASTA não suporta de forma nativa sequências maiores que 150 pares de bases."
+            ],
+            answer: 1
+        },
+        {
+            question: "Dentre os grupos de arquivos abaixo, quais são classificados estritamente como formatos de COORDENADAS (anotações/variantes)?",
+            options: [
+                "Arquivos FASTA, FASTQ e arquivos de metadados experimentais.",
+                "Arquivos em formato binário como SAM e BAM não ordenados.",
+                "Arquivos estruturados como BED, GFF3 e arquivos VCF.",
+                "Arquivos brutos da máquina como FASTQ aliados a um VCF."
+            ],
+            answer: 2
+        },
+        {
+            question: "Um arquivo BED é muito utilizado na genômica. Quais são as suas três colunas absolutamente obrigatórias?",
+            options: [
+                "Nome da Query (QNAME), Sinalizador de status (FLAG) e string CIGAR.",
+                "Nome do cromossomo, Fonte da anotação e Tipo da feature biológica.",
+                "Nome do cromossomo, Posição exata do elemento e ID da variante encontrada.",
+                "Nome do cromossomo, Posição genômica inicial e Posição genômica final."
+            ],
+            answer: 3
+        },
+        {
+            question: "Qual a principal característica técnica que diferencia um arquivo BAM de um arquivo SAM?",
+            options: [
+                "O BAM é um formato restrito ao mapeamento de leituras longas de tecnologias como PacBio.",
+                "O BAM omite completamente as sequências lidas, guardando estritamente as coordenadas mapeadas.",
+                "O BAM é essencialmente a versão binária e compactada do formato SAM em texto plano legível.",
+                "O SAM já vem estruturalmente indexado por padrão, funcionalidade ausente no formato BAM."
+            ],
+            answer: 2
+        },
+        {
+            question: "Em um arquivo SAM/BAM, o mesmo identificador (QNAME) pode se repetir. Qual cenário NÃO justifica essa repetição?",
+            options: [
+                "A read encontrou alinhamentos múltiplos válidos (multi-mapping) em áreas genômicas diferentes.",
+                "O sequenciamento é pareado (Paired-End), logo a Read 1 e a Read 2 compartilham o mesmo QNAME.",
+                "A read formou um alinhamento quimérico (suplementar), mapeando porções em locais distintos.",
+                "A read obteve um score de qualidade Phred global excessivamente baixo durante o sequenciamento."
+            ],
+            answer: 3
+        },
+        {
+            question: "O que deve ser analisado no formato SAM/BAM para distinguir logicamente os múltiplos registros que compartilham o mesmo QNAME?",
+            options: [
+                "O escore reportado pela coluna MAPQ de qualidade de mapeamento.",
+                "O valor numérico bit a bit (bitwise) presente no campo FLAG.",
+                "A extensão das operações descritas pela string alfanumérica CIGAR.",
+                "Os caracteres ASCII armazenados obrigatoriamente no campo QUAL."
+            ],
+            answer: 1
+        },
+        {
+            question: "Considere a string CIGAR: 15M1I34M. Analisando as operações biológicas indicadas, quantas bases físicas compõem essa read no total?",
+            options: [
+                "Exatamente 49 bases químicas sequenciadas.",
+                "Exatamente 50 bases químicas sequenciadas.",
+                "Aproximadamente 34 bases químicas sequenciadas.",
+                "Aproximadamente 15 bases químicas sequenciadas."
+            ],
+            answer: 1
+        },
+        {
+            question: "No CIGAR 15M1I34M, sabendo o tamanho total da read, quantas posições geográficas do genoma de referência ela abrange efetivamente?",
+            options: [
+                "A read cobre uma extensão de 50 posições na referência.",
+                "A read cobre uma extensão de 49 posições na referência.",
+                "A read cobre uma extensão de 34 posições na referência.",
+                "A read cobre uma extensão de 15 posições na referência."
+            ],
+            answer: 1
+        },
+        {
+            question: "Analisando o CIGAR alternativo 5S45M: indique a quantidade total de bases na read e a quantidade de posições que ela cobre na referência, respectivamente.",
+            options: [
+                "O total é 50 bases na read física; e ela ocupa 45 posições na referência genômica.",
+                "O total é 45 bases na read física; e ela ocupa 50 posições na referência genômica.",
+                "O total é 50 bases na read física; e ela ocupa 50 posições na referência genômica.",
+                "O total é 45 bases na read física; e ela ocupa 45 posições na referência genômica."
+            ],
+            answer: 0
+        },
+        {
+            question: "Como se traduz corretamente a nomenclatura das versões do genoma humano (genome release) entre o repositório do UCSC e o GRC/NCBI?",
+            options: [
+                "A versão hg19 equivale diretamente à GRCh38; e hg38 equivale à GRCh37.",
+                "A versão hg19 equivale diretamente à GRCh37; e hg38 equivale à GRCh38.",
+                "Ambos os grandes repositórios padronizaram o uso exclusivo do termo hgX.",
+                "O banco de dados do UCSC não armazena ou classifica genomas humanos."
+            ],
+            answer: 1
+        },
+        {
+            question: "Por que o exato mesmo release genômico (ex: hg38) pode apresentar genes diferentes se o download for feito via NCBI em vez do Ensembl?",
+            options: [
+                "Porque a sequência fundamental das bases nitrogenadas do DNA sofre mutações entre as plataformas.",
+                "Porque o repositório do Ensembl é projetado exclusivamente para abrigar genomas de roedores e plantas.",
+                "Porque embora a sequência de nucleotídeos seja idêntica, os pipelines e regras de anotação funcional diferem.",
+                "Porque plataformas divergentes utilizam tecnologias de interpretação de sequenciamento incompatíveis."
+            ],
+            answer: 2
+        },
+        {
+            question: "Qual programa alinhador disponível na bioinformática moderna é o mais adequado para mapear reads curtas de RNA eucariótico (splice-aware)?",
+            options: [
+                "Ferramentas focadas em DNA estrutural como o BWA mem ou Bowtie2.",
+                "Ferramentas otimizadas para sequenciamento longo ruidoso como o Minimap2.",
+                "Ferramentas capazes de lidar de forma nativa com íntrons, como o STAR ou HISAT2.",
+                "Ferramentas de pseudoalinhamento exclusivo sem geração de BAM, como Kallisto."
+            ],
+            answer: 2
+        },
+        {
+            question: "Para alinhar grandes volumes de reads curtas de DNA genômico padrão (sequenciamento Illumina), as melhores escolhas clássicas citadas em aula são:",
+            options: [
+                "O alinhador STAR, devido a sua excelente manipulação da memória RAM.",
+                "Os alinhadores baseados em Burrows-Wheeler, como o BWA mem ou Bowtie2.",
+                "O alinhador Minimap2, configurado com perfis específicos de alinhamento.",
+                "O algoritmo pseudoalinhador probabilístico embutido na ferramenta Salmon."
+            ],
+            answer: 1
+        },
+        {
+            question: "Que ferramenta computacional se consolidou como o padrão absoluto para alinhar reads ultralongas geradas por tecnologias como PacBio ou Nanopore?",
+            options: [
+                "A estrutura original do algoritmo BWA otimizada para supercomputadores.",
+                "A plataforma Bowtie2 rodando sob parâmetros rigorosos de tolerância.",
+                "O software HISAT2 através de seus módulos de expansão genômica nativos.",
+                "O algoritmo Minimap2, projetado visando contornar as altas taxas de erro associadas."
+            ],
+            answer: 3
+        },
+        {
+            question: "Uma vantagem técnica que o alinhador Bowtie2 possui em relação ao BWA mem frequentemente abordada em contextos acadêmicos é:",
+            options: [
+                "O Bowtie2 é capaz de compilar reads longas, algo que o ecossistema BWA bloqueia nativamente.",
+                "O Bowtie2 foi o primeiro programa projetado puramente para decodificar matrizes de RNA-Seq.",
+                "O Bowtie2 permite alinhamento local flexível (soft-clipping) e o BWA mem rejeita essa estratégia.",
+                "O Bowtie2 suporta forçar um mapeamento puramente end-to-end, economizando poder computacional."
+            ],
+            answer: 3
+        },
+        {
+            question: "Qual é a estrutura correta (pipeline) de comandos com BWA e Samtools para partir de um FASTQ single-end até chegar em um BAM compatível com IGV?",
+            options: [
+                "Comando bwa index, seguido de samtools sort, encerrando com o comando bwa mem.",
+                "Comando bwa mem, seguido de samtools view, depois samtools sort e enfim samtools index.",
+                "Comando samtools view para leitura, seguido de bwa mem, e finalizando com samtools index.",
+                "Comando bwa mem no arquivo, seguido de samtools index, e por último o samtools sort."
+            ],
+            answer: 1
+        },
+        {
+            question: "Por que não podemos reaproveitar o índice de um genoma de referência feito no BWA para realizar um alinhamento posterior utilizando o programa Bowtie2?",
+            options: [
+                "Porque o tamanho total de bytes dos cromossomos excede a capacidade de leitura do Bowtie2.",
+                "Porque cada programa arquitetou estruturas matemáticas distintas (BWT vs FM-index) otimizadas para si.",
+                "Porque o volume de linhas presente no FASTQ original se desestabiliza quando troca-se a ferramenta.",
+                "Na verdade, o índice é universal; um único arquivo indexado serve para qualquer ferramenta moderna."
+            ],
+            answer: 1
+        },
+        {
+            question: "O que o software visualizador IGV (Integrative Genomics Viewer) demanda obrigatoriamente de um arquivo BAM para não travar a memória do computador?",
+            options: [
+                "O arquivo BAM precisa ter sido previamente ordenado por coordenadas e estar acompanhado do seu respectivo índice (.bai).",
+                "O arquivo BAM necessita obrigatoriamente ter sido estruturado de ponta a ponta pelo algoritmo do alinhador BWA mem.",
+                "O arquivo BAM precisa ser retroativamente descompactado de volta para o formato gigante em texto legível chamado SAM.",
+                "O arquivo BAM deve conter uma pré-filtragem que delete todas as leituras sem relevância clínica diagnosticada."
+            ],
+            answer: 0
+        },
+        {
+            question: "Qual o papel principal do arquivo VCF de 'variantes populacionais conhecidas' inserido durante a etapa de chamada de variantes genômicas?",
+            options: [
+                "Ele é utilizado como esqueleto principal para construir ou montar a sequência do genoma de referência do zero.",
+                "Ele atua exclusivamente como um dicionário biológico simplificado para traduzir ou nomear corretamente os cromossomos.",
+                "Ele atua na recalibração matemática da qualidade e ensina o algoritmo a não confundir variações comuns com erros mecânicos da máquina.",
+                "Ele substitui completamente o peso biológico do arquivo FASTQ na etapa anterior e acelera severamente o processo de alinhamento."
+            ],
+            answer: 2
+        },
+        {
+            question: "Como estão mapeadas as informações bidimensionais em uma típica matriz de contagens brutas (raw counts) oriunda de um ensaio biológico de RNA-Seq?",
+            options: [
+                "As linhas do arquivo organizam as Amostras sequenciadas e as colunas organizam os milhares de Genes correspondentes.",
+                "As linhas do arquivo organizam os milhares de Genes identificados e as colunas organizam as diferentes Amostras sequenciadas.",
+                "As linhas do arquivo organizam os Reads individuais enquanto as colunas descrevem seus respectivos Valores absolutos de Qualidade.",
+                "As linhas do arquivo organizam todos os Cromossomos mapeados e as colunas registram as diversas Coordenadas sequenciais."
+            ],
+            answer: 1
+        },
+        {
+            question: "Ferramentas estatísticas modernas, como Kallisto e Salmon, destacam-se na quantificação transcricional por que vantagem metodológica central?",
+            options: [
+                "Por executarem um exaustivo e longo alinhamento clássico, base por base, contra a complexa fita do genoma inteiro.",
+                "Por substituírem o alinhamento total genômico por modelos ágeis de pseudoalinhamento puramente contra transcriptomas sem gerar BAMs.",
+                "Por utilizarem simuladores algorítmicos avançados que convertem quimicamente os dados de RNA bruto em DNA estabilizado in silico.",
+                "Por compilarem uma sólida matriz de expressão diferencial sem a necessidade de confrontar nenhum tipo de sequência guia de referência."
+            ],
+            answer: 1
+        },
+        {
+            question: "Se uma biblioteca biológica tem 30 milhões de reads em sua totalidade, e o gene de interesse 'G1' mapeou exatamente 600 reads. Qual é o valor do CPM deste gene?",
+            options: [
+                "A normalização por profundidade resulta no valor de 10 unidades biológicas relativas.",
+                "A normalização por profundidade resulta no valor de 20 unidades biológicas relativas.",
+                "A normalização por profundidade resulta no valor de 600 unidades biológicas relativas.",
+                "A normalização por profundidade resulta no valor de 18.000 unidades biológicas relativas."
+            ],
+            answer: 1
+        },
+        {
+            question: "Retomando a questão anterior: Sabendo que o CPM de G1 resultou em 20 unidades, e que a extensão física desse gene é de 3 kb. Como finalizamos o cálculo do RPKM?",
+            options: [
+                "O valor final da normalização combinada atinge exatamente 20 pontos estatísticos RPKM.",
+                "O valor final da normalização combinada atinge exatamente 60 pontos estatísticos RPKM.",
+                "O valor final da normalização combinada atinge exatamente 6.66 pontos estatísticos RPKM.",
+                "O valor final da normalização combinada atinge exatamente 13 pontos estatísticos RPKM."
+            ],
+            answer: 2
+        },
+        {
+            question: "Em investigações comparativas entre condições biológicas distintas, por que métricas baseadas em TPM são consideradas matematicamente mais consistentes do que as de RPKM?",
+            options: [
+                "Porque o modelo TPM descarta completamente o fator de comprimento do gene durante seu cálculo de dispersão genômica.",
+                "Porque a conversão final em TPM trava o somatório de todos os genes obrigatoriamente na proporção fixa de 1 milhão, facilitando o contraste cruzado.",
+                "Porque a normalização via TPM é restritamente voltada a tecnologias de ponta compostas por leituras paired-end bilaterais.",
+                "Porque o método original RPKM é incapaz de mitigar as variações profundas resultantes do peso técnico de bibliotecas pequenas."
+            ],
+            answer: 1
+        },
+        {
+            question: "Qual o principal motivo técnico que força pacotes estatísticos avançados (DESeq2, edgeR) a rejeitarem variáveis tratadas como TPM e RPKM durante a expressão diferencial?",
+            options: [
+                "As frações decimais em arquivos baseados puramente em TPM triplicam perigosamente a alocação volumétrica de disco no servidor.",
+                "Estes pacotes são estruturados mediante distribuições binomiais que requerem valores reais (não decimais) para parametrizar precisamente a dispersão ruidosa intrínseca.",
+                "As diretrizes padronizadas da comunidade determinam que tabelas em TPM continuam compatíveis caso apliquem fatoramentos externos logarítmicos complexos.",
+                "O tratamento através de matrizes balanceadas em TPM perde funcionalidade severa perante as discrepâncias evolutivas frequentes em genomas humanos não caracterizados."
+            ],
+            answer: 1
+        },
+        {
+            question: "Ao delinearmos metodologias laboratoriais rígidas para genômica transcriptômica, como diferenciamos as finalidades teóricas entre uma réplica biológica de uma réplica técnica?",
+            options: [
+                "A métrica técnica reusa sujeitos biológicos vivos da mesma prole idêntica; a biológica engloba apenas calibrações puras entre os dutos físicos do equipamento.",
+                "A medição técnica processa a repetição sucessiva do próprio insumo bioquímico (medindo precisão); a biológica insere espécimes biológicos independentes para mitigar o viés natural populacional.",
+                "Replicações biológicas inexistem em experimentações computacionais modernas; validam-se teorias focando rigorosamente nas discrepâncias de performance técnica purificada.",
+                "Ensaios delineados sob protocolos de réplicas técnicas são monitorados integralmente em observações in vivo populacionais em contrapartida às biológicas exclusivas para cultura de tecidos celulares."
+            ],
+            answer: 1
+        },
+        {
+            question: "Se a renderização multivariada de um gráfico PCA projetar as réplicas independentes do grupamento 'Controle' geometricamente mais dispersas do que a distância projetada contra o cluster 'Tratado', o que concluímos clinicamente?",
+            options: [
+                "A representação assegura estatisticamente a máxima integridade e consistência técnica impecável acerca do protocolo submetido integralmente sobre o teste original.",
+                "A dispersão demonstra que ruídos intrínsecos de lotes imprecisos ou variabilidade extrema basal dos sujeitos estão camuflando o impacto fenotípico direto provocado efetivamente pela variável de tratamento.",
+                "Significa primariamente que o alinhador mapeou com sucesso expressivas conexões pareadas intrínsecas a corridas exclusivas de um pipeline focado no processamento Paired-End.",
+                "Evidencia indubitavelmente que os reguladores intrínsecos de genes basais do conglomerado Tratado colapsaram e registraram nulidade de taxa expressiva após sofrer as devidas induções simuladas."
+            ],
+            answer: 1
+        },
+        {
+            question: "Sem diferenças reais significativas, 20.000 genes testados ao p<0,05 originam cerca de mil descobertas biológicas falsas. Como o método matemático idealizado por Benjamini-Hochberg (FDR) resgata o peso analítico desta pesquisa?",
+            options: [
+                "O procedimento deleta cirurgicamente as métricas corrompidas dos referidos mil alvos ruidosos da tabela submetida ao alinhador basal e refaz o sequenciamento subsequente contínuo.",
+                "A calibragem inflaciona computacionalmente a magnitude absoluta contida no raw count pertencente sistematicamente às chamadas falsas e reequilibra o limiar empírico estipulado na distribuição gaussiana.",
+                "Ao ranquear as discrepâncias registradas entre os múltiplos testes avaliativos conduzidos paralelamente, o método flexibiliza limites rígidos estritos regulando uma cota percentual fixa tolerável destinada especificamente para falhas assumidas.",
+                "Forçando repetições analíticas cruzadas entre matrizes sintéticas processadas integralmente nos parâmetros restritivos da calibração populacional oriunda da máquina óptica pertencente à amostragem anterior estagnada."
+            ],
+            answer: 2
+        }
+    ];
+
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let currentMode = 'random';
+
+    function shuffleArray(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    const screens = {
+        start: document.getElementById('start-screen'),
+        quiz: document.getElementById('quiz-screen'),
+        result: document.getElementById('result-screen')
+    };
+    
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const progressBar = document.getElementById('progress-bar');
+    const questionCounter = document.getElementById('question-counter');
+    const scoreCounter = document.getElementById('score-counter');
+    const finalScore = document.getElementById('final-score');
+    const finalGrade = document.getElementById('final-grade');
+    const feedbackMsg = document.getElementById('feedback-msg');
+
+    function switchScreen(screenName) {
+        Object.values(screens).forEach(screen => screen.classList.remove('active'));
+        screens[screenName].classList.add('active');
+    }
+
+    function startGame(mode) {
+        currentMode = mode || currentMode;
+        
+        if (currentMode === 'sequential') {
+            currentQuestions = [...questions];
+        } else {
+            currentQuestions = shuffleArray([...questions]);
+        }
+        
+        currentQuestionIndex = 0;
+        score = 0;
+        switchScreen('quiz');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const q = currentQuestions[currentQuestionIndex];
+        
+        questionText.textContent = q.question;
+        const progressPercent = ((currentQuestionIndex) / currentQuestions.length) * 100;
+        progressBar.style.width = `${progressPercent}%`;
+        
+        const questionNumberToDisplay = currentQuestionIndex + 1;
+        questionCounter.textContent = `Questão ${questionNumberToDisplay} / ${currentQuestions.length}`;
+        
+        scoreCounter.textContent = `Acertos: ${score}`;
+        optionsContainer.innerHTML = '';
+        
+        const originalCorrectText = q.options[q.answer];
+        const shuffledOptions = shuffleArray([...q.options]);
+        const newCorrectIndex = shuffledOptions.indexOf(originalCorrectText);
+
+        shuffledOptions.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.classList.add('option-btn');
+            btn.textContent = opt;
+            btn.onclick = () => selectOption(index, btn, newCorrectIndex, shuffledOptions);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectOption(selectedIndex, buttonClicked, correctIndex, optionsArray) {
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selectedIndex === correctIndex) {
+            buttonClicked.classList.add('correct');
+            score++;
+            scoreCounter.textContent = `Acertos: ${score}`;
+        } else {
+            buttonClicked.classList.add('wrong');
+            buttons[correctIndex].classList.add('correct');
+        }
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuestions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }, 1500); 
+    }
+
+    function showResults() {
+        switchScreen('result');
+        progressBar.style.width = '100%';
+        
+        finalScore.textContent = `${score} / ${currentQuestions.length}`;
+        
+        const calculoNota = ((score / currentQuestions.length) * 10).toFixed(1);
+        finalGrade.textContent = `Nota: ${calculoNota} / 10`;
+        
+        if (score >= 25) {
+            feedbackMsg.textContent = "Excelente! Você dominou alinhamento, genomas e RNA-Seq.";
+            finalGrade.style.color = "#48bb78";
+        } else if (score >= 15) {
+            feedbackMsg.textContent = "Muito bom! Continue praticando os conceitos para fixá-los de vez.";
+            finalGrade.style.color = "#ecc94b";
+        } else {
+            feedbackMsg.textContent = "Continue tentando! A repetição é a chave do aprendizado.";
+            finalGrade.style.color = "#f56565";
+        }
+    }
+
+    function restartGame() {
+        startGame(currentMode);
+    }
+</script>
+
+</body>
+</html>
